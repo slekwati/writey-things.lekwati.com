@@ -3,6 +3,7 @@ languageCode: en-gb
 theme: PaperMod
 paginate: 5
 title: Shannan's Write-y Things
+disqusShortname: shannans-write-y-things
 
 params:
   comments: true
