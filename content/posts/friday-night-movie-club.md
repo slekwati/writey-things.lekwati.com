@@ -1,6 +1,6 @@
 ---
 title: Friday Night Movie Club
-date: 2021-02-06 T08:47:11+01:00
+date: 2021-02-06T08:47:11+01:00
 summary: |
   Friday Nights were made for movies and curling up with a loved one.
   But what happens when that love isn't really there anymore?
