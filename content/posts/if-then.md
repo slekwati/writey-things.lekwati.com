@@ -10,6 +10,7 @@ draft: false
 cover:
   image: if-then.jpeg
   alt: Bed sheets
+  caption: Photo by [JP Valery](https://unsplash.com/photos/DE9MM2voqKc)
 ---
 
 12.17am.
