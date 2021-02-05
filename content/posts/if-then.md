@@ -1,6 +1,6 @@
 ---
 title: If/Then
-date: 2019-03-26T08:47:11+01:00
+date: 2021-02-06T08:47:11+01:00
 summary: |
   Anxiety about the following day is keeping Katherine Lawrence awake at night. 
   A creeping sensation of fear stops her from being able to rest.
