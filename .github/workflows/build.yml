@@ -4,6 +4,8 @@ on:
   push:
     branches:
       - main  # Set a branch to deploy
+  schedule:
+    - cron: '42 */24 * * *'  # Once a day at 42
 
 jobs:
   deploy:
