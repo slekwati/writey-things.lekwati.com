@@ -10,6 +10,7 @@ draft: false
 cover:
   image: fountain-of-youth.jpeg
   alt: Rainbow fountain
+  caption: Photo by [Komod Ayal](https://unsplash.com/photos/CZtzerCJ0cA)
 ---
 The mist of water spraying from the fountain cast a rainbow like glow
 across the air, through the golden hues of sunset. The air was warm,
