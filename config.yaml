@@ -1,0 +1,9 @@
+baseURL: https://blog.lekwati.com/
+languageCode: en-gb
+theme: PaperMod
+paginate: 5
+title: Shannan's Write-y Things
+
+params:
+  comments: true
+  ShowReadingTime: true
