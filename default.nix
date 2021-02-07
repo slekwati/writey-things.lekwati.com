@@ -9,5 +9,5 @@ mkShell {
       ps.python-frontmatter
     ]))
   ];
-  LD_PRELOAD = "${libfaketime}/lib/libfaketime.so.1";
+  LIBFAKETIME = "${libfaketime}/lib/libfaketime.so.1";
 }

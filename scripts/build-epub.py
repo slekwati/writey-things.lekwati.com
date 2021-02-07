@@ -79,7 +79,9 @@ def convert_epub(source: Path, target: Path, cover_dir: Path) -> bool:
         template = ROOT.joinpath("epub.html")
         # pandoc put dates into document
         env = os.environ.copy()
-        env.update(FAKETIME="2000-01-01 11:12:13")
+        libfaketime = env.get("LIBFAKETIME")
+        if libfaketime:
+            env.update(FAKETIME="2000-01-01 11:12:13", LD_PRELOAD=libfaketime)
         subprocess.run(["pandoc", f.name, "-o", target, "--template", template],
                        env=env)
 
