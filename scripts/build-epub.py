@@ -6,6 +6,8 @@ from pathlib import Path
 from tempfile import NamedTemporaryFile
 import argparse
 import os
+import uuid
+import hashlib
 import sys
 from typing import Dict
 
@@ -38,12 +40,22 @@ def parse_args() -> Options:
 def set_default(metadata: Dict[str, str], key: str, value: str):
     metadata[key] = metadata.get(key, value)
 
+def sha256sum(filename: str) -> str:
+    h  = hashlib.sha256()
+    b  = bytearray(128*1024)
+    mv = memoryview(b)
+    with open(filename, 'rb', buffering=0) as f:
+        for n in iter(lambda : f.readinto(mv), 0):
+            h.update(mv[:n])
+    return h.hexdigest()
 
-def convert_epub(source: Path, target: Path, cover_dir: Path) -> None:
+def convert_epub(source: Path, target: Path, cover_dir: Path) -> bool:
     post = frontmatter.load(source)
     set_default(post, "creator", "Shannan Lekwati")
     set_default(post, "lang", "en")
     date = post.get("date")
+    urn = uuid.uuid3(uuid.NAMESPACE_URL, 'blog.lekwati.com/ebooks/{target.name}').urn
+    post["identifier"] = urn
     if date:
         post["date"] = post["date"].replace(tzinfo=None)
     post.get("creator", "Shannan Lekwati")
@@ -79,9 +91,18 @@ def main() -> None:
         subdir = Path(subdir_str)
         for file in files:
             target = opts.output_dir.joinpath(Path(file).stem + ".epub")
+            if target.exists():
+                hashsum = sha256sum(str(target))
+            else:
+                hashsum = ""
             convert_epub(subdir.joinpath(file), target, opts.cover_dir)
             mobi = opts.output_dir.joinpath(Path(file).stem + ".mobi")
-            convert_mobi(target, mobi)
+            if hashsum != "":
+                new_hashsum = sha256sum(str(target))
+                if hashsum != new_hashsum:
+                    # convert-ebook is not reproducible, but pandoc is with our faketime hack.
+                    # Therefore only rebuild mobi if epub has changed
+                    convert_mobi(target, mobi)
 
 
 
