@@ -77,7 +77,11 @@ def convert_epub(source: Path, target: Path, cover_dir: Path) -> bool:
         f.flush()
         print(f"write {target}")
         template = ROOT.joinpath("epub.html")
-        subprocess.run(["pandoc", f.name, "-o", target, "--template", template])
+        # pandoc put dates into document
+        env = os.environ.copy()
+        env.update(FAKETIME="2000-01-01 11:12:13")
+        subprocess.run(["pandoc", f.name, "-o", target, "--template", template],
+                       env=env)
 
 
 def convert_mobi(source: Path, target: Path) -> None:
