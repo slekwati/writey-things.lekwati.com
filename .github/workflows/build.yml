@@ -16,16 +16,14 @@ jobs:
         with:
           submodules: true  # Fetch Hugo themes (true OR recursive)
           fetch-depth: 0    # Fetch all history for .GitInfo and .Lastmod
-
-      - name: Setup Hugo
-        uses: peaceiris/actions-hugo@v2
+      - uses: cachix/install-nix-action@v12
         with:
-          hugo-version: '0.79.1'
-          # extended: true
-
+          nix_path: nixpkgs=channel:nixos-unstable
+      - name: build ebooks
+        run: nix-shell --run "python ./scripts/build-epub.py --covers static -o static/ebooks content/posts/"
+      - uses: stefanzweifel/git-auto-commit-action@v4
       - name: Build
-        run: hugo --minify
-
+        run: nix-shell --run "hugo --minify"
       - name: Deploy
         uses: peaceiris/actions-gh-pages@v3
         with:
