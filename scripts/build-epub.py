@@ -40,7 +40,7 @@ def parse_args() -> Options:
 def set_default(metadata: Dict[str, str], key: str, value: str):
     metadata[key] = metadata.get(key, value)
 
-def sha256sum(filename: str) -> str:
+def sha256sum(filename: Path) -> str:
     h  = hashlib.sha256()
     b  = bytearray(128*1024)
     mv = memoryview(b)
@@ -92,6 +92,12 @@ def convert_mobi(source: Path, target: Path) -> None:
     subprocess.run(["ebook-convert", source, target])
 
 
+def mobi_needs_rebuild(old_hashsum: str, epub: Path, mobi: Path) -> bool:
+    if not mobi.exists() or old_hashsum == "":
+        return True
+    return old_hashsum != sha256sum(epub)
+
+
 def main() -> None:
     opts = parse_args()
 
@@ -100,17 +106,15 @@ def main() -> None:
         for file in files:
             target = opts.output_dir.joinpath(Path(file).stem + ".epub")
             if target.exists():
-                hashsum = sha256sum(str(target))
+                hashsum = sha256sum(target)
             else:
                 hashsum = ""
             convert_epub(subdir.joinpath(file), target, opts.cover_dir)
             mobi = opts.output_dir.joinpath(Path(file).stem + ".mobi")
-            if hashsum != "":
-                new_hashsum = sha256sum(str(target))
-                if hashsum != new_hashsum:
-                    # convert-ebook is not reproducible, but pandoc is with our faketime hack.
-                    # Therefore only rebuild mobi if epub has changed
-                    convert_mobi(target, mobi)
+            # convert-ebook is not reproducible, but pandoc is with our faketime hack.
+            # Therefore only rebuild mobi if epub has changed
+            if mobi_needs_rebuild(hashsum, target, mobi):
+                convert_mobi(target, mobi)
 
 
 
