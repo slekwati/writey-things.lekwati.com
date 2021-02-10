@@ -9,7 +9,13 @@ import os
 import uuid
 import hashlib
 import sys
-from typing import Dict
+from typing import Dict, List
+
+from calibre.utils.logging import Log
+from calibre.customize.conversion import OptionRecommendation
+from calibre.ebooks.conversion.plumber import Plumber
+from calibre.ebooks.conversion.plugins.mobi_output import MOBIOutput
+from calibre.ebooks.conversion.plugins.epub_output import EPUBOutput
 
 import frontmatter
 
@@ -19,7 +25,7 @@ ROOT = Path(__file__).parent.resolve()
 
 @dataclass
 class Options:
-    source_dir: Path
+    source_files: List[Path]
     output_dir: Path
     cover_dir: Path
 
@@ -27,94 +33,65 @@ class Options:
 def parse_args() -> Options:
     parser = argparse.ArgumentParser()
     help = "File to import rather than default.nix. Examples, ./release.nix"
-    parser.add_argument("source_dir", default="./.")
+    parser.add_argument("source_files", nargs="+", default="./.")
     parser.add_argument("--covers", default="./.")
     parser.add_argument("-o", "--output", default="./.")
     args = parser.parse_args()
     return Options(
-        source_dir=Path(args.source_dir),
+        source_files=[Path(s) for s in args.source_files],
         cover_dir=Path(args.covers),
         output_dir=Path(args.output)
     )
 
-def set_default(metadata: Dict[str, str], key: str, value: str):
-    metadata[key] = metadata.get(key, value)
 
-def sha256sum(filename: Path) -> str:
-    h  = hashlib.sha256()
-    b  = bytearray(128*1024)
-    mv = memoryview(b)
-    with open(filename, 'rb', buffering=0) as f:
-        for n in iter(lambda : f.readinto(mv), 0):
-            h.update(mv[:n])
-    return h.hexdigest()
-
-def convert_epub(source: Path, target: Path, cover_dir: Path) -> bool:
+def convert_document(source: Path, target: Path, cover_dir: Path):
     post = frontmatter.load(source)
-    set_default(post, "creator", "Shannan Lekwati")
-    set_default(post, "lang", "en")
+    log = Log()
+
+
+    args = [
+        ("authors", post.get("creator", "Shannan Lekwati")),
+        ("language", post.get("lang", "en")),
+        ("title", post.get("title", "unknown title")),
+    ]
+
     date = post.get("date")
-    urn = uuid.uuid3(uuid.NAMESPACE_URL, 'blog.lekwati.com/ebooks/{target.name}').urn
-    post["identifier"] = urn
     if date:
-        post["date"] = post["date"].replace(tzinfo=None)
-    post.get("creator", "Shannan Lekwati")
+        args += [
+            ("pubdate", str(post["date"])),
+            ("timestamp", str(post["date"]))
+        ]
+
     summary = post.get("summary")
     if summary:
-        set_default(post, "description", summary)
+        args += [ ("comments", summary) ]
 
-    post["titlepage"] = False
     cover_image = post.get("cover", {}).get("image")
     if cover_image:
-        cover_path = cover_dir.joinpath(cover_image)
+        cover_path = cover_dir.joinpath(cover_image).absolute()
         if cover_path.exists():
-            post["cover-image"] = str(cover_path)
+            args += [ ("cover", str(cover_path)) ]
         else:
             print(f"WARNING: {cover_image} in {source} does not exists", file=sys.stderr)
 
-    with NamedTemporaryFile(suffix=source.suffix) as f:
-        frontmatter.dump(post, f)
+    with NamedTemporaryFile(suffix=source.suffix, mode="w") as f:
+        f.write(post.content)
         f.flush()
-        print(f"write {target}")
-        template = ROOT.joinpath("epub.html")
-        # pandoc put dates into document
-        env = os.environ.copy()
-        libfaketime = env.get("LIBFAKETIME")
-        if libfaketime:
-            env.update(FAKETIME="2000-01-01 11:12:13",
-                       LD_PRELOAD=libfaketime,
-                       TZ="UTC")
-        subprocess.run(["pandoc", f.name, "-o", target, "--template", template],
-                       env=env)
 
-
-def convert_mobi(source: Path, target: Path) -> None:
-    subprocess.run(["ebook-convert", source, target])
-
-
-def mobi_needs_rebuild(old_hashsum: str, epub: Path, mobi: Path) -> bool:
-    if not mobi.exists() or old_hashsum == "":
-        return True
-    return old_hashsum != sha256sum(epub)
+        plumber = Plumber(f.name, target, log)
+        recommendations = [(k, v, OptionRecommendation.HIGH) for (k,v) in args]
+        plumber.merge_ui_recommendations(recommendations)
+        plumber.run()
 
 
 def main() -> None:
     opts = parse_args()
 
-    for subdir_str, dirs, files in os.walk(opts.source_dir):
-        subdir = Path(subdir_str)
-        for file in files:
-            target = opts.output_dir.joinpath(Path(file).stem + ".epub")
-            if target.exists():
-                hashsum = sha256sum(target)
-            else:
-                hashsum = ""
-            convert_epub(subdir.joinpath(file), target, opts.cover_dir)
-            mobi = opts.output_dir.joinpath(Path(file).stem + ".mobi")
-            # convert-ebook is not reproducible, but pandoc is with our faketime hack.
-            # Therefore only rebuild mobi if epub has changed
-            if mobi_needs_rebuild(hashsum, target, mobi):
-                convert_mobi(target, mobi)
+    for source_file in opts.source_files:
+        target = opts.output_dir.joinpath(source_file.stem + ".epub")
+        convert_document(source_file, target, opts.cover_dir)
+        target = opts.output_dir.joinpath(source_file.stem + ".mobi")
+        convert_document(source_file, target, opts.cover_dir)
 
 
 
