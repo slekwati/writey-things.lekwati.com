@@ -10,6 +10,7 @@ cover:
   image: friday-night-movie-club.jpeg
   alt: Friday night movie club ticket
 ---
+
 7pm, Friday night. Couch, lights off, dishwasher churning away in the
 kitchen, cleaning off the grease from our usual Chinese takeaway,
 curtains drawn, your choice of movie on the screen. As always.
