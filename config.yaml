@@ -4,6 +4,8 @@ theme: PaperMod
 paginate: 5
 title: Shannan's Write-y Things
 disqusShortname: shannans-write-y-things
+Copyright: |
+  &copy; 2020 Shannan Lekwati ([Source](https://github.com/slekwati/blog.lekwati.com))
 
 params:
   comments: true
