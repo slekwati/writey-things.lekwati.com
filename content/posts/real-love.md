@@ -2,6 +2,10 @@
 title: Real Love
 date: 2021-02-14T12:00:00+01:00
 draft: false
+cover:
+  image: real-love.jpeg
+  alt: Cup of coffe on the bed.
+  caption: Photo by [Mia Moessinger](https://unsplash.com/photos/fgERZpY4m8k)
 ---
 I've never been one for soppy romance. I balk at all the Nicholas Sparks
 books. I can't keep quiet when watching a Rom-Com. They\'re filled with
