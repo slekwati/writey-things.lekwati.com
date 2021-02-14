@@ -10,3 +10,10 @@ Copyright: |
 params:
   comments: true
   ShowReadingTime: true
+  homeInfoParams:
+      Content: >
+        Shannan. 27. Gemini. Likes sunsets and long walks on a beach.
+
+        I'm a qualified Scottish solicitor (lawyer), currently living in Germany, trying to learn the language and complete a university degree in a surprisingly maths heavy course. Of course all this means that I needed a new hobby so I could procrastinate.
+
+        I love reading, writing and cooking, so feel free to reach out about any of the above!
