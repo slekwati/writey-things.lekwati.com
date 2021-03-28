@@ -4,6 +4,7 @@ mkShell {
     bashInteractive
     hugo
     calibre
+    pandoc
     python3Packages.python-frontmatter
   ];
 }
