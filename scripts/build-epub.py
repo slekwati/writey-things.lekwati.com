@@ -48,7 +48,7 @@ def convert_document(source: Path, target: Path, cover_dir: Path):
     post = frontmatter.load(source)
     log = Log()
 
-    title = post.get("title", "unknown title")
+    title = post.get("title", "Untitled")
     author = post.get("creator", "Shannan Lekwati")
 
     args = [
@@ -77,8 +77,9 @@ def convert_document(source: Path, target: Path, cover_dir: Path):
             print(f"WARNING: {cover_image} in {source} does not exists", file=sys.stderr)
 
     with NamedTemporaryFile(suffix=source.suffix, mode="w") as f:
-        f.write(f"# {title}\n")
-        f.write(f"** by {author} **\n\n")
+        f.write(f"# {title} by **{author}** \n")
+        if "dedication" in post:
+            f.write(f"{dedication}\n")
         f.write(post.content)
         f.flush()
 
