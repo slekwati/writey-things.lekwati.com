@@ -26,7 +26,7 @@ jobs:
       - name: build ebooks
         run: nix-shell --run "calibre-debug ./scripts/build-epub.py -- --covers static -o static/ebooks ${{ env.GIT_DIFF_FILTERED }}"
         if: env.GIT_DIFF && !env.MATCHED_FILES
-      - uses: stefanzweifel/git-auto-commit-action@v4.12.0
+      - uses: stefanzweifel/git-auto-commit-action@v4.15.2
       - name: Build
         run: nix-shell --run "hugo --minify"
       - name: Deploy
